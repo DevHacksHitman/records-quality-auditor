@@ -1,4 +1,4 @@
-# records-quality-audit
+# Records Quality Auditor
 
 A **zero-dependency** records validator for CSV and Excel files that leaves
 behind a machine-readable **audit trail**.
