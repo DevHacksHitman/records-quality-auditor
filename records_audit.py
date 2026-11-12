@@ -107,9 +107,12 @@ def read_xlsx(path: Path) -> Tuple[List[str], List[List[str]]]:
                 shared.append("".join(node.text or "" for node in item.iter(f"{XLSX_NS}t")))
 
         sheets = sorted(
-            name
-            for name in names
-            if name.startswith("xl/worksheets/sheet") and name.endswith(".xml")
+            (
+                name
+                for name in names
+                if name.startswith("xl/worksheets/sheet") and name.endswith(".xml")
+            ),
+            key=lambda name: int(re.search(r"sheet(\d+)", name).group(1)),
         )
         if not sheets:
             raise RecordsError(f"{path} contains no worksheet")
@@ -132,7 +135,8 @@ def read_xlsx(path: Path) -> Tuple[List[str], List[List[str]]]:
                 text = value.text or ""
             else:
                 text = ""
-            cells[_column_index(reference)] = text.strip()
+            index = _column_index(reference) if reference else len(cells)
+            cells[index] = text.strip()
         if cells:
             width = max(cells) + 1
             table.append([cells.get(index, "") for index in range(width)])
@@ -188,6 +192,13 @@ def load_rules(path: Any) -> Dict[str, Any]:
         raise RecordsError(
             f"unknown rule(s): {', '.join(unknown)} — allowed: {', '.join(sorted(RULE_KEYS))}"
         )
+    for field, spec in (rules.get("format") or {}).items():
+        try:
+            re.compile(_pattern_for(spec))
+        except re.error as exc:
+            raise RecordsError(
+                f"format rule for {field!r} is not a valid regular expression: {exc}"
+            ) from exc
     return rules
 
 

@@ -22,8 +22,14 @@ jobs:
       - name: Test suite (zero network, zero packages)
         run: python3 -m unittest discover -s tests -t . -v
 
+      # The smoke fixture must carry every column rules.example.json refers to,
+      # or the validator correctly exits 2 and this gate fails on first push.
       - name: Smoke run against the example rules
         run: |
-          printf 'surname,first_name,file_number,date_of_birth,gender,age\nOkafor,Ada,1001,1990-05-01,Female,34\nOkafor,Ada,1001,not-a-date,Unknown,200\n' > /tmp/sample.csv
+          cat > /tmp/sample.csv <<'EOF'
+          surname,first_name,file_number,date_of_birth,email,phone,gender,age
+          Okafor,Ada,1001,1990-05-01,ada-at-example-dot-com,08033333333,Female,34
+          Okafor,Ada,1001,not-a-date,bad-email,123,Male,200
+          EOF
           python3 records_audit.py /tmp/sample.csv --rules rules.example.json --audit-log /tmp/audit.jsonl || test $? -eq 1
           test "$(wc -l < /tmp/audit.jsonl)" -eq 1

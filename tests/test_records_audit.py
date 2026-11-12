@@ -135,6 +135,10 @@ class TestRules(unittest.TestCase):
         with self.assertRaises(ra.RecordsError):
             ra.load_rules("/nonexistent/rules.json")
 
+    def test_invalid_custom_regex_is_a_usage_error(self):
+        with self.assertRaises(ra.RecordsError):
+            ra.load_rules(self.write_rules({"format": {"surname": "([a-z"}}))
+
 
 class TestValidate(unittest.TestCase):
     header = ["surname", "first_name", "file_number", "date_of_birth", "gender", "age"]
@@ -317,6 +321,13 @@ class TestCli(unittest.TestCase):
         entry = json.loads(log.read_text(encoding="utf-8").strip())
         self.assertEqual(entry["result"], "FAIL")
         self.assertEqual(entry["file"], "records.csv")
+
+    def test_invalid_regex_exits_two_not_one(self):
+        bad = self.dir / "bad-rules.json"
+        bad.write_text(json.dumps({"format": {"surname": "([a-z"}}), encoding="utf-8")
+        result = self.run_cli(str(self.records), "--rules", str(bad))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("not a valid regular expression", result.stderr)
 
     def test_main_is_callable_in_process(self):
         buffer = io.StringIO()
