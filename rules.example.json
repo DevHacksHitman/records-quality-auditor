@@ -1,0 +1,16 @@
+{
+  "required": ["surname", "first_name", "file_number"],
+  "unique": ["file_number"],
+  "format": {
+    "date_of_birth": "date",
+    "email": "email",
+    "phone": "phone_ng"
+  },
+  "allowed": {
+    "gender": ["Male", "Female"]
+  },
+  "range": {
+    "age": [0, 120]
+  },
+  "pii": true
+}
