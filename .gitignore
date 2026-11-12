@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local data — never committed (records files may contain personal data)
+*.csv
+*.tsv
+*.xlsx
+audit.jsonl
+!rules.example.json
+
+# Agent harness artifacts
+.playwright-mcp/
+private_docs/
+
+# OS noise
+.DS_Store
+
+# Personal notes
+*.local.md
+*.plan.md
